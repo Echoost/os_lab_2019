@@ -1,0 +1,8 @@
+1. sh background.sh > background.txt
+    wc -m background.txt
+
+2. grep "cake" cake_rhymes.txt > with.cake.txt
+
+3. chmod +x hello.sh
+   ./hello.sh
+   
