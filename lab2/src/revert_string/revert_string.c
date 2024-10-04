@@ -2,6 +2,12 @@
 
 void RevertString(char *str)
 {
-	// your code here
+    int length = strlen(str);
+    for (int i = 0; i < length / 2; i++)
+    {
+        // Меняем местами символы
+        char temp = str[i];
+        str[i] = str[length - 1 - i];
+        str[length - 1 - i] = temp;
+    }
 }
-

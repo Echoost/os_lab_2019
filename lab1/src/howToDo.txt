@@ -6,3 +6,6 @@
 3. chmod +x hello.sh
    ./hello.sh
    
+
+4. chmod +x average.sh
+   ./average.sh $(<numbers.txt)

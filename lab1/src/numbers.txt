@@ -1,0 +1,1 @@
+head -c 150 /dev/urandom | od -An -i | awk '{for(i=1;i<=NF;i++) if($i >= 0) print $i}' | head -n 150 > numbers.txt

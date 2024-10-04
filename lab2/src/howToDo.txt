@@ -1,0 +1,26 @@
+1.
+gcc main.c swap.c -o swap
+./swap
+
+2.
+gcc main.c revert_string.c -o revert_string
+./revert_string "hello"
+
+3.
+gcc -c revert_string.c -o revert_string.o
+ar rcs librevert.a revert_string.o
+gcc -shared -o librevert.so revert_string.c
+gcc main.c -o revert_static -L. -lrevert
+gcc main.c -o revert_dynamic -L. -lrevert -Wl,-rpath=.
+./revert_static "hello"
+./revert_dynamic "world"
+
+
+gcc -c revert_string.c -o revert_string.o
+ar rcs librevert.a revert_string.o
+gcc -shared -o librevert.so revert_string.c
+gcc main.c -o revert_static -L. -lrevert
+gcc main.c -o revert_dynamic -L. -lrevert -Wl,-rpath=.
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+./revert_static "hello"
+./revert_dynamic "world"
