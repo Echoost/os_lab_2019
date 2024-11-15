@@ -11,9 +11,17 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <signal.h>
 
 #include "find_min_max.h"
 #include "utils.h"
+
+int timeout = 0; // Переменная для хранения таймаута в секундах
+
+// Обработчик сигнала для таймаута
+void handle_alarm(int sig) {
+    printf("Timeout reached, killing child processes...\n");
+}
 
 int main(int argc, char **argv) {
   int seed = -1;
@@ -28,7 +36,8 @@ int main(int argc, char **argv) {
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
                                       {"by_files", no_argument, 0, 'f'},
-                                      {0, 0, 0, 0}};
+                                      {"timeout", required_argument, 0, 0},  // Новая опция для таймаута
+                                      {0, 0, 0, 0}}; 
 
     int option_index = 0;
     int c = getopt_long(argc, argv, "f", options, &option_index);
@@ -62,6 +71,9 @@ int main(int argc, char **argv) {
           case 3:
             with_files = true;
             break;
+          case 4:
+            timeout = atoi(optarg);  // Чтение значения таймаута
+            break;
           default:
             printf("Index %d is out of options\n", option_index);
         }
@@ -82,7 +94,7 @@ int main(int argc, char **argv) {
   }
 
   if (seed == -1 || array_size == -1 || pnum == -1) {
-    printf("Usage: %s --seed \"num\" --array_size \"num\" --pnum \"num\" \n",
+    printf("Usage: %s --seed \"num\" --array_size \"num\" --pnum \"num\" [--timeout \"num\"] \n",
            argv[0]);
     return 1;
   }
@@ -103,6 +115,12 @@ int main(int argc, char **argv) {
         exit(1);
       }
     }
+  }
+
+  // Установка обработчика для сигнала SIGALRM
+  if (timeout > 0) {
+    signal(SIGALRM, handle_alarm);
+    alarm(timeout);  // Запуск таймера
   }
 
   for (int i = 0; i < pnum; i++) {
@@ -133,8 +151,20 @@ int main(int argc, char **argv) {
   }
 
   while (active_child_processes > 0) {
-    wait(NULL);
-    active_child_processes -= 1;
+    pid_t pid = waitpid(-1, NULL, WNOHANG);  // Неблокирующий wait
+    if (pid == -1) {
+      perror("waitpid failed");
+      break;
+    } else if (pid > 0) {
+      active_child_processes -= 1;
+    }
+  }
+
+  // В случае таймаута и оставшихся активных процессов, отправляем SIGKILL
+  if (timeout > 0 && active_child_processes > 0) {
+    for (int i = 0; i < pnum; i++) {
+      kill(pipes[i][0], SIGKILL);  // Посылаем сигнал SIGKILL дочерним процессам
+    }
   }
 
   struct MinMax global_min_max;

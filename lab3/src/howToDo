@@ -1,0 +1,20 @@
+Задание 1.
+
+gcc -o min_max sequential_min_max.c find_min_max.c utils.c
+ ./min_max 123 10
+
+Задание 2-3
+
+gcc -o parallel_min_max parallel_min_max.c find_min_max.c utils.c
+./parallel_min_max --seed 123 --array_size 1000 --pnum 4
+./parallel_min_max --seed 123 --array_size 1000 --pnum 4 --by_files
+
+Задание 4
+
+make all
+make clean
+
+Задание 5
+
+make
+./run_sequential_min_max 123 10
